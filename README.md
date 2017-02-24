@@ -91,7 +91,7 @@ Note the following:
 - The built-in `DATABASE_URL` value expects a SpatiaLite database by default.
 
 
-Migrate (FIXME)
+Migrate
 ------------------
 
 Run migrate after the environment is up (app and database) to ensure proper setup: 
@@ -107,7 +107,7 @@ work.
 1. Install Node + npm. For OS X using Homebrew: `brew install npm`
 2. Install required packages: `npm install`
    `npm` will call bower after install
-3.(docker exec) python manage.py collectstatic
+3.(docker exec) python manage.py collectstatic --noinput
 
 S3 is also supported as static server. To enable S3 support the following environment variables must be configured:
 

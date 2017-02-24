@@ -21,13 +21,13 @@ services:
     expose:
       - "5432"
 
-  app:
+  django:
     build:
       context: .
       dockerfile: Dockerfile
-    image: bcv/app
-    container_name: bcv-app
-    hostname: localhost
+    image: bcv/django
+    container_name: bcv-django
+    hostname: django
     restart: on-failure:3
     stdin_open: true
     tty: true
@@ -40,7 +40,7 @@ services:
     environment:
       - DEBUG=true #Set debug mode ('true' or 'false').
       - DATABASE_URL=postgres://bcv:bcv@postgis:5432/bcv #Database connection URL (eg. postgres://user:pass@server:port/db).
-      - BASE_URL=localhost #Main URL where the app will be available (NO TRAILING SLASH!).
+      - BASE_URL="http://localhost:8000" #Main URL where the app will be available (NO TRAILING SLASH!).
       - BLOG_URL= #Blog URL.      
       - MAILING_ADDRESS=Rua dos Bobos, 0, CEP 01234-567 #Physical address of the organization running the project
       - CONTACT_PHONE=12-3456-7890 #Contact phone to be presented on footer.      
