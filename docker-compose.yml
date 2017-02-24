@@ -1,0 +1,99 @@
+version: '2'
+
+services:
+
+  postgis:
+    image: jamesbrink/postgresql
+    container_name: bcv-postgis
+    hostname: postgis
+    environment:
+      - USER=bcv #A superuser role. default: postgres
+      - PASSWORD=bcv #The password for the user. default: postgres
+      - SCHEMA=bcv #Name of schema to create. default: postgres
+      - ENCODING=UTF8 #Encoding of the schema we are about to create. default: SQL_ASCII
+      - POSTGIS=true #Enable PostGIS extensions on the schema
+    privileged: true    
+    volumes:
+      # - ./development/:/docker-entrypoint-initdb.d
+      - postgis:/var/lib/postgresql/data # Remove the './' to make it a named volume (and uncomment the data volume)    
+    ports:
+     - "0.0.0.0:5432:5432"
+    expose:
+      - "5432"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: bcv/app
+    container_name: bcv-app
+    hostname: localhost
+    restart: on-failure:3
+    stdin_open: true
+    tty: true
+    depends_on:
+      - postgis
+    ports:
+      - "0.0.0.0:8000:8000"
+    volumes:      
+      - .:/app      
+    environment:
+      - DEBUG=true #Set debug mode ('true' or 'false').
+      - DATABASE_URL=postgres://bcv:bcv@postgis:5432/bcv #Database connection URL (eg. postgres://user:pass@server:port/db).
+      - BASE_URL=localhost #Main URL where the app will be available (NO TRAILING SLASH!).
+      - BLOG_URL= #Blog URL.      
+      - MAILING_ADDRESS=Rua dos Bobos, 0, CEP 01234-567 #Physical address of the organization running the project
+      - CONTACT_PHONE=12-3456-7890 #Contact phone to be presented on footer.      
+      - CONTACT_EMAIL=luther@b.c.v #Contact e-mail to be presented on footer.      
+      - DEFAULT_FROM_EMAIL=luther@b.c.v #Email address to identify outcoming transactional emails
+      - EMAIL_HOST_PASSWORD=bcv #Password to authenticate on the SMTP server
+      - EMAIL_HOST_USER=bcv #Username to authenticate on the SMTP server
+      - EMAIL_HOST=postfix #SMTP host name to be used for email sending
+      - EMAIL_PORT=25 #SMTP port to be used for email sending
+      - FACEBOOK_API_KEY= #Facebook app key (used for registration)
+      - FACEBOOK_API_SECRET= #Facebook app secret (used for registration)
+      - GOOGLE_API_KEY= #Google services API key
+      - GOOGLE_ANALYTICS_ID= #Google Analytics tracking ID      
+      - SECRET_KEY=1234567890 #Unique and secret salt for passwords, hashes and session keys
+      - SENTRY_DSN= #Optional. Use this to configure your Sentry DSN.
+      - SNS_FACEBOOK= #URL of the Facebook fan page
+      - SNS_GOOGLEPLUS= #URL of the Google+ page
+      - SNS_TWITTER= #URL of the Twitter profile
+      - SPATIALITE_LIBRARY_PATH=
+
+    working_dir: /app
+    # Entrypoint using the Wait for It script due to Docker services startup problem
+    # https://docs.docker.com/compose/startup-order/, https://github.com/vishnubob/wait-for-it
+    #entrypoint: ./.wait-for-it/wait-for-it.sh postgres:5432 -- supervisord -n -c /etc/supervisord.conf
+
+  postfix:
+    image: catatnight/postfix
+    container_name: bcv-postfix
+    hostname: postfix
+    environment:
+      - MAILDOMAIN=maildev
+      - SMTP_USER=bcv:bcv
+
+  maildev:
+    image: djfarrelly/maildev:latest
+    container_name: bcv-maildev
+    hostname: maildev
+    expose:
+      - "25"
+    ports:
+      - "0.0.0.0:1080:80"      
+    depends_on:
+      - postfix
+    command:
+      - "bin/maildev"
+      - "--web"
+      - "80"
+      - "--smtp"
+      - "25"
+      - "--incoming-user"
+      - "bcv"
+      - "--incoming-pass"
+      - "bcv"
+
+volumes:
+  postgis: # Postgres development data named volume 

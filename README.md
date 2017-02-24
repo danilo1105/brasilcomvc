@@ -68,7 +68,7 @@ Setup your PostGIS database:
 
 0. Turn on PostGIS extensions:
 
-    docker exec bcv_db psql -U postgres -c "create extension postgis;" bcv
+    docker exec bcv_db psql -U postgres -c "create extension postgis;" bcv    
     docker exec bcv_db psql -U postgres -c "create extension postgis_topology;" bcv
 
 0. Export the `DATABASE_URL` environment
@@ -91,6 +91,13 @@ Note the following:
 - The built-in `DATABASE_URL` value expects a SpatiaLite database by default.
 
 
+Migrate (FIXME)
+------------------
+
+Run migrate after the environment is up (app and database) to ensure proper setup: 
+
+    (docker exec) python manage.py makemigrations && python manage.py migrate
+
 Setup static files
 ------------------
 
@@ -100,6 +107,7 @@ work.
 1. Install Node + npm. For OS X using Homebrew: `brew install npm`
 2. Install required packages: `npm install`
    `npm` will call bower after install
+3.(docker exec) python manage.py collectstatic
 
 S3 is also supported as static server. To enable S3 support the following environment variables must be configured:
 

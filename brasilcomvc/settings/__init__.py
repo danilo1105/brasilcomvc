@@ -26,6 +26,7 @@ CONTACT_PHONE = os.getenv('CONTACT_PHONE')
 DATABASES = {
     'default': dj_database_url.config(default='spatialite:///dev.sqlite'),
 }
+DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
 SPATIALITE_LIBRARY_PATH = os.environ.get('SPATIALITE_LIBRARY_PATH', None)
 DEBUG = os.environ.get('DEBUG', 'false').lower() == 'true'
 DEFAULT_FROM_EMAIL = os.environ['DEFAULT_FROM_EMAIL']
