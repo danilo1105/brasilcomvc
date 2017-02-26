@@ -60,11 +60,15 @@ services:
       - SNS_GOOGLEPLUS= #URL of the Google+ page
       - SNS_TWITTER= #URL of the Twitter profile
       - SPATIALITE_LIBRARY_PATH=
-
     working_dir: /app
     # Entrypoint using the Wait for It script due to Docker services startup problem
     # https://docs.docker.com/compose/startup-order/, https://github.com/vishnubob/wait-for-it
     #entrypoint: ./.wait-for-it/wait-for-it.sh postgres:5432 -- supervisord -n -c /etc/supervisord.conf
+    entrypoint: python
+    command: 
+      - manage.py
+      - runserver
+      - 0.0.0.0:8000
 
   postfix:
     image: catatnight/postfix
@@ -73,13 +77,13 @@ services:
     environment:
       - MAILDOMAIN=maildev
       - SMTP_USER=bcv:bcv
+    expose:
+      - "25"
 
   maildev:
     image: djfarrelly/maildev:latest
     container_name: bcv-maildev
-    hostname: maildev
-    expose:
-      - "25"
+    hostname: maildev    
     ports:
       - "0.0.0.0:1080:80"      
     depends_on:
